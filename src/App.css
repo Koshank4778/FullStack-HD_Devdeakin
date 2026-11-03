@@ -462,3 +462,175 @@ main {
     padding: 24px 18px;
   }
 }
+
+
+/* BROWSE POSTS PAGE */
+
+.browse-page {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+  min-height: 70vh;
+}
+
+.browse-header {
+  margin-bottom: 30px;
+}
+
+.browse-header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.browse-header p {
+  color: #666;
+}
+
+.subscription-label {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 14px;
+  background: #e8f0ff;
+  color: #2457a7;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.browse-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.browse-filters input,
+.browse-filters select {
+  padding: 11px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.reset-button {
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.posts-list h2 {
+  margin-bottom: 20px;
+}
+
+.post-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.post-card h3 {
+  margin: 15px 0 8px;
+  font-size: 21px;
+}
+
+.post-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-type-label,
+.free-label,
+.paid-label {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.post-type-label {
+  background: #eee;
+  color: #333;
+}
+
+.free-label {
+  background: #e2f6e9;
+  color: #218447;
+}
+
+.paid-label {
+  background: #fff0d9;
+  color: #a56800;
+}
+
+.post-date {
+  color: #888;
+  font-size: 12px;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.post-tags span {
+  color: #2865b5;
+  background: #edf4ff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.post-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.post-actions button {
+  border: none;
+  background: #285da8;
+  color: white;
+  padding: 9px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.post-actions button:hover,
+.reset-button:hover {
+  opacity: 0.85;
+}
+
+.article-content {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  margin-top: 15px;
+}
+
+.error-message {
+  color: #c62828;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 650px) {
+  .browse-page {
+    padding: 15px;
+  }
+
+  .browse-filters {
+    flex-direction: column;
+  }
+
+  .post-actions {
+    flex-wrap: wrap;
+  }
+}

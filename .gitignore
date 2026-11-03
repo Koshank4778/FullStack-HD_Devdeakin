@@ -27,3 +27,7 @@ serviceAccountKey*.json
 *.njsproj
 *.sln
 *.sw?
+
+# Firebase Admin credentials
+credentials/
+*firebase-adminsdk*.json

@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function Post() {
+    const { user, loading, subscriptionPlan } = useAuth();
+
     const [postType, setPostType] = useState("question");
+    const [postPlan, setPostPlan] = useState("Free");
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -9,8 +13,20 @@ function Post() {
     const [articleText, setArticleText] = useState("");
     const [tags, setTags] = useState("");
 
-    const handlePost = (event) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handlePost = async (event) => {
         event.preventDefault();
+
+        if (loading) {
+            alert("Please wait while your account is loading.");
+            return;
+        }
+
+        if (!user) {
+            alert("Please log in before creating a post.");
+            return;
+        }
 
         const tagList = tags
             .split(",")
@@ -19,6 +35,11 @@ function Post() {
 
         if (!title.trim()) {
             alert("Please enter a title.");
+            return;
+        }
+
+        if (title.trim().length > 150) {
+            alert("Title cannot exceed 150 characters.");
             return;
         }
 
@@ -40,24 +61,84 @@ function Post() {
             return;
         }
 
-        if (tagList.some((tag) => tag.length === 0)) {
-            alert("Please enter valid tags.");
+        if (tagList.some((tag) => tag.length > 30)) {
+            alert("Each tag must be 30 characters or less.");
             return;
         }
 
-        alert("Your post has been submitted successfully!");
+        if (new Set(tagList.map((tag) => tag.toLowerCase())).size !== tagList.length) {
+            alert("Please do not enter duplicate tags.");
+            return;
+        }
 
-        setTitle("");
-        setDescription("");
-        setAbstract("");
-        setArticleText("");
-        setTags("");
+        if (postPlan === "Paid" && subscriptionPlan !== "Paid") {
+            alert("You need a Paid subscription to create Paid posts.");
+            return;
+        }
+
+        const postData = {
+            title: title.trim(),
+            postType,
+            postPlan,
+            description: postType === "question" ? description.trim() : "",
+            abstract: postType === "article" ? abstract.trim() : "",
+            articleText: postType === "article" ? articleText.trim() : "",
+            tags: tagList
+        };
+
+        try {
+            setIsSubmitting(true);
+
+            // Get Firebase authentication token
+            const token = await user.getIdToken();
+
+            // Send post information to Express backend
+            const response = await fetch("http://localhost:3001/api/posts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(postData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Unable to submit post.");
+            }
+
+            alert(result.message);
+
+            // Clear the form after successful submission
+            setTitle("");
+            setDescription("");
+            setAbstract("");
+            setArticleText("");
+            setTags("");
+            setPostType("question");
+            setPostPlan("Free");
+
+        } catch (error) {
+            console.error("Post submission error:", error);
+            alert(error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
+    if (loading) {
+        return <p>Loading account...</p>;
+    }
 
     return (
         <main className="post-page">
             <form className="post-form" onSubmit={handlePost}>
                 <h2 className="post-heading">New Post</h2>
+
+                {!user && (
+                    <p>Please log in to create a post.</p>
+                )}
 
                 <div className="post-type">
                     <span>Select Post Type:</span>
@@ -85,18 +166,51 @@ function Post() {
                     </label>
                 </div>
 
+                <div className="post-type">
+                    <span>Select Post Plan:</span>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="postPlan"
+                            value="Free"
+                            checked={postPlan === "Free"}
+                            onChange={() => setPostPlan("Free")}
+                        />
+                        Free
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="postPlan"
+                            value="Paid"
+                            checked={postPlan === "Paid"}
+                            onChange={() => setPostPlan("Paid")}
+                        />
+                        Paid
+                    </label>
+                </div>
+
+                {postPlan === "Paid" && subscriptionPlan !== "Paid" && (
+                    <p className="tag-help">
+                        You need to upgrade your subscription before submitting a Paid post.
+                    </p>
+                )}
+
                 <section className="post-section">
-                    <h3>What do you want to ask or share</h3>
+                    <h3>What do you want to ask or share?</h3>
 
                     <p className="post-instruction">
-                        This section is designed based on the type of the post.
-                        It changes depending on your selection.
+                        This section changes depending on your post type.
                     </p>
 
                     <label htmlFor="title">Title</label>
+
                     <input
                         id="title"
                         type="text"
+                        maxLength="150"
                         placeholder={
                             postType === "question"
                                 ? "Start your question with how, what, why, etc."
@@ -109,41 +223,50 @@ function Post() {
 
                     {postType === "question" ? (
                         <>
-                            <label htmlFor="description">Describe your problem</label>
+                            <label htmlFor="description">
+                                Describe your problem
+                            </label>
+
                             <textarea
                                 id="description"
                                 className="large-textarea"
                                 placeholder="Explain your question or problem"
                                 value={description}
                                 onChange={(event) => setDescription(event.target.value)}
+                                maxLength="10000"
                                 required
                             />
                         </>
                     ) : (
                         <>
                             <label htmlFor="abstract">Abstract</label>
+
                             <textarea
                                 id="abstract"
                                 className="small-textarea"
                                 placeholder="Enter a 1-paragraph abstract"
                                 value={abstract}
                                 onChange={(event) => setAbstract(event.target.value)}
+                                maxLength="2000"
                                 required
                             />
 
                             <label htmlFor="articleText">Article Text</label>
+
                             <textarea
                                 id="articleText"
                                 className="large-textarea"
                                 placeholder="Write your article here"
                                 value={articleText}
                                 onChange={(event) => setArticleText(event.target.value)}
+                                maxLength="50000"
                                 required
                             />
                         </>
                     )}
 
                     <label htmlFor="tags">Tags</label>
+
                     <input
                         id="tags"
                         type="text"
@@ -157,8 +280,12 @@ function Post() {
                     </p>
                 </section>
 
-                <button className="post-button" type="submit">
-                    Post
+                <button
+                    className="post-button"
+                    type="submit"
+                    disabled={!user || isSubmitting}
+                >
+                    {isSubmitting ? "Submitting..." : "Post"}
                 </button>
             </form>
         </main>
