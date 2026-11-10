@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { auth } from "../firebase";
 
 function NavBar() {
-    const { user, loading } = useAuth();
+    const { user, loading, role } = useAuth();
 
     const handleLogout = async () => {
         try {
@@ -28,6 +28,10 @@ function NavBar() {
                 <Link to="/post">Post</Link>
                 <Link to="/browse-posts">Browse Posts</Link>
                 <Link to="/pricing">Pricing</Link>
+
+                {!loading && role === "admin" && (
+                    <Link to="/admin">Admin Dashboard</Link>
+                )}
 
                 {!loading && (
                     user ? (

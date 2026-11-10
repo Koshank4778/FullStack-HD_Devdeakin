@@ -14,6 +14,11 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [subscriptionPlan, setSubscriptionPlan] = useState("Free");
+    const [role, setRole] = useState("user");
+
+    const [trialActive, setTrialActive] = useState(false);
+    const [trialEndAt, setTrialEndAt] = useState(null);
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,6 +32,9 @@ export function AuthProvider({ children }) {
 
             if (!currentUser) {
                 setSubscriptionPlan("Free");
+                setRole("user");
+                setTrialActive(false);
+                setTrialEndAt(null);
                 setLoading(false);
                 return;
             }
@@ -36,17 +44,39 @@ export function AuthProvider({ children }) {
                 const userSnapshot = await getDoc(userRef);
 
                 if (active) {
-                    const plan = userSnapshot.exists()
-                        ? userSnapshot.data().subscriptionPlan || "Free"
-                        : "Free";
+                    const userData = userSnapshot.exists()
+                        ? userSnapshot.data()
+                        : {};
+
+                    const plan = userData.subscriptionPlan || "Free";
+                    const userRole = userData.role || "user";
+
+                    let activeTrial = false;
+                    let endDate = null;
+
+                    if (userData.trialEndAt) {
+                        endDate = userData.trialEndAt.toDate
+                            ? userData.trialEndAt.toDate()
+                            : new Date(userData.trialEndAt);
+
+                        activeTrial =
+                            endDate.getTime() > Date.now() &&
+                            plan !== "Paid";
+                    }
 
                     setSubscriptionPlan(plan);
+                    setRole(userRole);
+                    setTrialActive(activeTrial);
+                    setTrialEndAt(endDate);
                 }
             } catch (error) {
-                console.error("Error loading subscription:", error);
+                console.error("Error loading user data:", error);
 
                 if (active) {
                     setSubscriptionPlan("Free");
+                    setRole("user");
+                    setTrialActive(false);
+                    setTrialEndAt(null);
                 }
             } finally {
                 if (active) {
@@ -66,8 +96,17 @@ export function AuthProvider({ children }) {
             value={{
                 user,
                 loading,
+
                 subscriptionPlan,
-                setSubscriptionPlan
+                setSubscriptionPlan,
+
+                role,
+
+                trialActive,
+                setTrialActive,
+
+                trialEndAt,
+                setTrialEndAt
             }}
         >
             {children}

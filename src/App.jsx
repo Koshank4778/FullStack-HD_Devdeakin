@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Post from "./pages/Post";
 import Pricing from "./pages/Pricing";
 import BrowsePosts from "./pages/BrowsePosts";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import { Routes, Route } from "react-router-dom";
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/post" element={<Post />} />
         <Route path="/browse-posts" element={<BrowsePosts />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
 
       <Footer />
